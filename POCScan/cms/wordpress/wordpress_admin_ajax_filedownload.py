@@ -25,11 +25,14 @@ class wordpress_admin_ajax_filedownload_BaseVerify:
             req = requests.get(vulnurl, headers=headers, timeout=10, verify=False)
             if r"DB_NAME" in req.text and r"DB_USER" in req.text:
                 cprint("[+]存在wordpress admin-ajax.php任意文件下载漏洞...(高危)\tpayload: "+vulnurl, "red")
+                return True, vulnurl, "wordpress admin-ajax.php任意文件下载", payload, req.text
             else:
                 cprint("[-]不存在wordpress_admin_ajax_filedownload漏洞", "white", "on_grey")
+                return False, None, None, None, None
 
         except:
             cprint("[-] "+__file__+"====>可能不存在漏洞", "cyan")
+            return False, None, None, None, None
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")

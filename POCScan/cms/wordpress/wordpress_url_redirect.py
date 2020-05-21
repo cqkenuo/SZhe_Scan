@@ -25,11 +25,14 @@ class wordpress_url_redirect_BaseVerify:
             req = requests.get(vulnurl, headers=headers, timeout=10, verify=False)
             if r"100e8a82eea1ef8416e585433fd8462e" in req.text:
                 cprint("[+]存在wordpress插件跳转漏洞...(低危)\tpayload: "+vulnurl, "blue")
+                return True, vulnurl, "wordpress插件跳转", payload, req.text
             else:
                 cprint("[-]不存在wordpress_url_redirect漏洞", "white", "on_grey")
+                return False, None, None, None, None
 
         except:
             cprint("[-] "+__file__+"====>可能不存在漏洞", "cyan")
+            return False, None, None, None, None
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")

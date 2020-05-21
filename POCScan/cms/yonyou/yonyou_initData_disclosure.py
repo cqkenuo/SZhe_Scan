@@ -32,11 +32,14 @@ class yonyou_initData_disclosure_BaseVerify:
             req = requests.get(vulnurl, headers=headers, timeout=10, verify=False)
             if time.time() - start_time >= 6:
                 cprint("[+]存在用友致远A6协同系统SQL注入漏洞...(高危)\tpayload: "+vulnurl, "red")
+                return True, vulnurl, "用友致远A6协同系统敏感信息泄露&SQL注射", payload, req.text
             else:
                 cprint("[-]不存在yonyou_initData_disclosure漏洞", "white", "on_grey")
+                return False, None, None, None, None
 
         except:
             cprint("[-] "+__file__+"====>可能不存在漏洞", "cyan")
+            return False, None, None, None, None
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")

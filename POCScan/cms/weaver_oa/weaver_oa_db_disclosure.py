@@ -26,11 +26,14 @@ class weaver_oa_db_disclosure_BaseVerify:
             req = requests.get(vulnurl, headers=headers, timeout=10, verify=False)
             if r"datapassword" in req.text:
                 cprint("[+]存在泛微OA 数据库配置泄露漏洞...(高危)\tpayload: "+vulnurl, "red")
+                return True, vulnurl, "泛微OA 数据库配置泄露", str(payload), req.text
             else:
                 cprint("[-]不存在weaver_oa_db_disclosure漏洞", "white", "on_grey")
+                return False, None, None, None, None
 
         except:
             cprint("[-] "+__file__+"====>可能不存在漏洞", "cyan")
+            return False, None, None, None, None
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")

