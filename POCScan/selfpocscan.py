@@ -8,17 +8,12 @@ from termcolor import cprint
 from init import app,redispool
 from exts import db
 from models import BugList
-from urllib.parse import urlparse
-from POCScan.information.informationmain import *
-from POCScan.cms.cmsmain import *
+
 try:
     from POCScan.pocdb import pocdb_pocs
 except Exception as e:
     print(e)
-from POCScan.industrial.industrialmain import *
-from POCScan.system.systemmain import *
-from POCScan.hardware.hardwaremain import *
-from multiprocessing import Pool
+
 from multiprocessing.dummy import Pool as ThreadPool
 
 warnings.filterwarnings("ignore")
@@ -73,7 +68,7 @@ def cmsprint(cmsname):
 def cmscheck(cmspoc):
     return cmspoc.run()
 
-def cmspoc_check(cmsurl):
+def cmspoc_check(oldurl,cmsurl):
     poc_class = pocdb_pocs(cmsurl)
     poc_dict = poc_class.cmspocdict
     cprint(">>>CMS漏洞扫描URL: "+cmsurl+"\t可用POC个数["+str(len(poc_dict))+"]", "magenta")
@@ -82,6 +77,14 @@ def cmspoc_check(cmsurl):
     results = cmspool.map(cmscheck, poc_dict.values())
     cmspool.close()
     cmspool.join()
+    with app.app_context():
+        for result in results:
+            vulnerable,bugurl,bugname,payload,bugdetail=result
+            if vulnerable:
+                bug = BugList(oldurl=oldurl, bugurl=bugurl, bugname=bugname, buggrade=redispool.hget('bugtype', bugname),
+                              payload=payload, bugdetail=bugdetail)
+                db.session.add(bug)
+        db.session.commit()
 
 def industrialprint(industrialname):
     msg = ">>>Scanning industrial vulns.."
@@ -90,9 +93,9 @@ def industrialprint(industrialname):
     time.sleep(0.5)
 
 def industrialcheck(industrialpoc):
-    industrialpoc.run()
+    return industrialpoc.run()
 
-def industrial_check(industrialurl):
+def industrial_check(oldurl,industrialurl):
     poc_class = pocdb_pocs(industrialurl)
     poc_dict = poc_class.industrialpocdict
     cprint(">>>工控漏洞扫描URL: "+industrialurl+"\t可用POC个数["+str(len(poc_dict))+"]", "magenta")
@@ -101,25 +104,16 @@ def industrial_check(industrialurl):
     results = industrialpool.map(industrialcheck, poc_dict.values())
     industrialpool.close()
     industrialpool.join()
+    with app.app_context():
+        for result in results:
+            vulnerable,bugurl,bugname,payload,bugdetail=result
+            if vulnerable:
+                bug = BugList(oldurl=oldurl, bugurl=bugurl, bugname=bugname, buggrade=redispool.hget('bugtype', bugname),
+                              payload=payload, bugdetail=bugdetail)
+                db.session.add(bug)
+        db.session.commit()
 
-def systemprint(systemname):
-    msg = ">>>Scanning system vulns.."
-    sys.stdout.write(msg+systemname+" "*len(msg)+"\r")
-    sys.stdout.flush()
-    time.sleep(0.5)
 
-def systemcheck(systempoc):
-    systempoc.run()
-
-def system_check(systemurl):
-    poc_class = pocdb_pocs(systemurl)
-    poc_dict = poc_class.systempocdict
-    cprint(">>>System漏洞扫描URL: "+systemurl+"\t可用POC个数["+str(len(poc_dict))+"]", "magenta")
-    systempool.map(systemprint, poc_dict.keys())
-    print("\r")
-    results = systempool.map(systemcheck, poc_dict.values())
-    systempool.close()
-    systempool.join()
 
 def hardwareprint(hardwarename):
     msg = ">>>Scanning hardware vulns.."
@@ -128,9 +122,9 @@ def hardwareprint(hardwarename):
     time.sleep(0.5)
 
 def hardwarecheck(hardwarepoc):
-    hardwarepoc.run()
+    return hardwarepoc.run()
 
-def hardware_check(hardwareurl):
+def hardware_check(oldurl,hardwareurl):
     poc_class = pocdb_pocs(hardwareurl)
     poc_dict = poc_class.hardwarepocdict
     cprint(">>>Hardware漏洞扫描URL: "+hardwareurl+"\t可用POC个数["+str(len(poc_dict))+"]", "magenta")
@@ -139,6 +133,14 @@ def hardware_check(hardwareurl):
     results = hardwarepool.map(hardwarecheck, poc_dict.values())
     hardwarepool.close()
     hardwarepool.join()
+    with app.app_context():
+        for result in results:
+            vulnerable,bugurl,bugname,payload,bugdetail=result
+            if vulnerable:
+                bug = BugList(oldurl=oldurl, bugurl=bugurl, bugname=bugname, buggrade=redispool.hget('bugtype', bugname),
+                              payload=payload, bugdetail=bugdetail)
+                db.session.add(bug)
+        db.session.commit()
 
 
 def AngelSwordMain(oldurl,checkurl):
@@ -147,13 +149,12 @@ def AngelSwordMain(oldurl,checkurl):
         #执行information漏洞poc检查
         informationpoc_check(oldurl,checkurl)
         #执行cms漏洞poc检查
-        cmspoc_check(checkurl)
+        cmspoc_check(oldurl,checkurl)
         #执行工控漏洞poc检查
-        industrial_check(checkurl)
-        #执行系统漏洞poc检查
-        system_check(checkurl)
+        industrial_check(oldurl,checkurl)
         #执行硬件漏洞poc检查
-        hardware_check(checkurl)
+        hardware_check(oldurl,checkurl)
+
 
     except Exception as e:
         print(e)

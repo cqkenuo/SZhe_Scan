@@ -6,8 +6,11 @@ from Wappalyzer import WebPage
 import get_message
 import ImportToRedis
 import redis
-
-
+from WebLogicScan import WebLogicScan
+from init import app,redispool
+from exts import db
+from models import BugList
+from POCScan import selfpocscan
 '''
 获取输入网址基础信息:
     1,WEB指纹识别,技术识别 Finger 
@@ -67,19 +70,36 @@ class GetBaseMessage():
     def SenDir(self):
         return get_message.SenFileScan(self.domain, self.redispool)
 
+    def WebLogicScan(self):
+        results=WebLogicScan.run(self.domain)
+        with app.app_context():
+            for result in results:
+                vulnerable, bugurl, bugname, bugdetail = result
+                if vulnerable:
+                    bug = BugList(oldurl=self.domain, bugurl=bugurl, bugname=bugname,
+                                  buggrade=redispool.hget('bugtype', bugname),
+                                  payload=bugurl, bugdetail=bugdetail)
+                    db.session.add(bug)
+            db.session.commit()
+
+    def AngelSwordMain(self):
+        selfpocscan.AngelSwordMain(self.domain,self.url)
+
+
+
 
 if __name__=='__main__':
     # redispool=redis.ConnectionPool(host='127.0.0.1',port=6379, decode_responses=True)
     redispool = redis.Redis(connection_pool=ImportToRedis.redisPool)
     try:
-        test=GetBaseMessage("test.vulnweb.com",redispool)
-        print(test.GetStatus())
-        print(test.GetTitle())
-        print(test.GetDate())
-        print(test.GetResponseHeader())
-        print(test.GetFinger())
-        print(test.PortScan())
-        print(test.SenDir())
+        test=GetBaseMessage("www.csdn.net",redispool)
+        test.AngelSwordMain()
+        # print(test.GetStatus())
+        # print(test.GetTitle())
+        # print(test.GetResponseHeader())
+        # print(test.GetFinger())
+        # print(test.PortScan())
+        # print(test.SenDir())
 
     except Exception as e:
         print(e)
