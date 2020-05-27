@@ -211,7 +211,7 @@ def SubDomainBurst(true_domain,redispool):
     return "\n".join(list(filter(None, SubDomain)))
 
 
-def SenFileScan(domain, redispool):
+def SenFileScan(domain,url):
     """
     敏感文件、目录扫描
     字典：dict\SEN_scan.txt
@@ -222,21 +222,35 @@ def SenFileScan(domain, redispool):
     pools = 20
     urlList = []
     for i in range(0, redispool.llen("SenScan")):
-        url="http://{}/{}".format(domain, redispool.lindex("SenScan", i))
-        urlList.append(url)
+        suffix=redispool.lindex("SenScan", i)
+        senurl="{}/{}".format(url,suffix)
+        urlList.append(senurl)
     pool = ThreadPool(pools)
     SenFileMessage = pool.map(UrlRequest, urlList)
     pool.close()
     pool.join()
+    url404="{}/springbird404page".format(url)
+    try:
+        rep404=requests.get(url404, headers=core.GetHeaders(), timeout=3, verify=False).text
+    except Exception as e:
+        print("超时")
+        rep404=str(e)
+        pass
     if len(SenFileMessage)!=0:
         with app.app_context():
+            print("Sen file and dir : \n")
             for url in SenFileMessage:
                 try:
-                    rep = requests.get(url, headers=core.GetHeaders(), timeout=3, verify=False)
-                    bug = BugList(oldurl=domain, bugurl=url, bugname="SenDir",buggrade=redispool.hget('bugtype', "SenDir"),payload=url, bugdetail=rep.text)
-                    db.session.add(bug)
+                    if url is None:
+                        continue
+                    rep = requests.get(url, headers=core.GetHeaders(), timeout=1, verify=False)
+                    #添加404界面的判断，避免过多杂乱信息
+                    if not core.is_similar_page(rep404,rep.text,radio=0.85):
+                        print(url)
+                        bug = BugList(oldurl=domain, bugurl=url, bugname="SenDir",buggrade=redispool.hget('bugtype', "SenDir"),payload=url, bugdetail=rep.text)
+                        db.session.add(bug)
                 except Exception as e:
-                    print(e)
+                    # print(e)
                     pass
             db.session.commit()
     return "\n".join(list(filter(None, SenFileMessage)))
@@ -355,6 +369,7 @@ if __name__ == "__main__":
     # print(FindIpAdd('202.202.157.110'))
     # SubDomainBurst('baidu.com')
     # print(CScanConsole('202.202.157.110'))
-    print(SenFileScan("test.vulnweb.com",redispool))
+    # print(SenFileScan("test.vulnweb.com",redispool))
     # for i in list:
     #     print(i)
+    print(SenFileScan("testphp.vulnweb.com","http://testphp.vulnweb.com/"))

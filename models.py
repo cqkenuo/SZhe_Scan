@@ -1,7 +1,6 @@
 from exts import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-
 '''
 存放模型
 '''
@@ -24,6 +23,13 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.pw_hash, password)
+
+class Profile(db.Model):
+    __tablename__ = 'profile'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    userid=db.Column(db.Integer, nullable=False)
+    blog=db.Column(db.String(100), nullable=True)
+    signature=db.Column(db.Text, nullable=True)
 
 
 # boolcheck  ->true 即 ip       ->false 即 domain
@@ -59,19 +65,19 @@ class DomainInfo(db.Model):
     whois = db.Column(db.Text, nullable=True)
     bindingip = db.Column(db.Text, nullable=True)
     sitestation = db.Column(db.Text, nullable=True)
-    recordinfo = db.Column(db.Text, nullable=True)
-    domainaddr = db.Column(db.String(100), nullable=True)
+    recordinfo = db.Column(db.Text(16777216), nullable=True)
+    domainaddr = db.Column(db.String(200), nullable=True)
 
 
 class BugList(db.Model):
     __tablename__ = 'buglist'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     oldurl = db.Column(db.String(50), nullable=True)
-    bugurl = db.Column(db.String(50), nullable=True)
+    bugurl = db.Column(db.String(200), nullable=True)
     bugname = db.Column(db.String(100), nullable=False)
     buggrade=db.Column(db.String(7),nullable=False)
-    payload = db.Column(db.String(100), nullable=True)
-    bugdetail = db.Column(db.Text, nullable=True)
+    payload = db.Column(db.String(200), nullable=True)
+    bugdetail = db.Column(db.Text(16777216), nullable=True)
 
 
 '''
