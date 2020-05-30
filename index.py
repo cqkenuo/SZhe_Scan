@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 from flask import  render_template, request, redirect, url_for, session, flash
 import uuid
 from models import User, Log, BaseInfo, InvitationCode,BugList,POC,IPInfo,DomainInfo,Profile
@@ -8,19 +7,11 @@ from init import app,redispool
 # from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import ProcessPoolExecutor
 from SZheConsole import SZheConsole
+import core
 from POCScan import selfpocscan
 # executor = ThreadPoolExecutor()
 executor = ProcessPoolExecutor()
 
-def AddPOC():
-    pocname=""
-    rule=""
-    expression=""
-    buggrade=""
-    redispool.hset('bugtype',pocname,buggrade)
-    poc = POC(name=pocname, rule=rule,expression=expression)
-    db.session.add(poc)
-    db.session.commit()
 
 
 def save_log(ip, email):
@@ -47,7 +38,12 @@ def validate(email, username, password1, password2):
 
 
 '''
-    输入的url格式应该为:www.baidu.com或者127.0.0.1形式
+    输入的url格式为:
+        www.baidu.com
+        127.0.0.1
+        http://www.baidu.com
+        http://127.0.0.1
+    每行一个
 '''
 
 
@@ -55,24 +51,39 @@ def validate(email, username, password1, password2):
 @app.route('/')
 # @login_required
 def index(page=None):
+    bugbit,bugtype=core.GetBit()
     if not page:
         page = 1
     per_page = 10
     paginate = BaseInfo.query.order_by(BaseInfo.date.desc()).paginate(page, per_page, error_out=False)
     infos = paginate.items
-    return render_template('homeOne.html', paginate=paginate, infos=infos)
+    return render_template('homeOne.html', paginate=paginate, infos=infos,bugbit=bugbit,bugtype=bugtype)
 
 
-@app.route('/POCmanage')
+@app.route('/POCmanage',methods=['GET','POST'])
 # @login_required
 def POCmanage():
-    return render_template('pocmanage.html')
+    bugbit,bugtype=core.GetBit()
+    if request.method == 'GET':
+        return render_template('pocmanage.html',bugbit=bugbit,bugtype=bugtype)
+    else:
+        pocname=request.form.get('pocname')
+        rule=request.form.get('rule')
+        expression=request.form.get('expression')
+        buggrade=request.form.get('buggrade')
+        redispool.hset('bugtype', pocname, buggrade)
+        poc = POC(name=pocname, rule=rule, expression=expression)
+        redispool.pfadd("poc", pocname)
+        db.session.add(poc)
+        db.session.commit()
+        return render_template('pocmanage.html',bugbit=bugbit,bugtype=bugtype)
 
 
 @app.route('/setting')
 # @login_required
 def setting():
-    return render_template('setting.html')
+    bugbit,bugtype=core.GetBit()
+    return render_template('setting.html',bugbit=bugbit,bugtype=bugtype)
 
 
 @app.route('/editinfo',methods=['GET','POST'])
@@ -105,7 +116,7 @@ def editinfo():
                 if not profile:
                     temp=Profile(userid=user_id,blog=blog,signature=signature)
                     db.session.add(temp)
-                else:
+                elif blog!="" and signature!="":
                     profile.blog=blog
                     profile.signature=signature
                 nowuser.set_password(password1)
@@ -120,40 +131,43 @@ def editinfo():
 @app.route('/domaindetail')
 # @login_required
 def domaindetail(id=None):
+    bugbit, bugtype = core.GetBit()
     if not id:
         baseinfo = BaseInfo.query.order_by(BaseInfo.id.desc()).first()
     else:
-        baseinfo = BaseInfo.query.filter(BaseInfo.id == id).first()
+        baseinfo = BaseInfo.query.filter(BaseInfo.id == id).order_by(BaseInfo.id.desc()).first()
     if baseinfo.boolcheck:
         deepinfo =IPInfo.query.filter(IPInfo.baseinfoid == baseinfo.id).first()
     else:
-        deepinfo=DomainInfo.query.filter(DomainInfo.baseinfoid == baseinfo.id).first()
+        deepinfo=DomainInfo.query.filter(DomainInfo.baseinfoid == baseinfo.id).order_by(DomainInfo.id.desc()).first()
     buglist=BugList.query.filter(BugList.oldurl == baseinfo.url).all()
-    return render_template('domain-detail.html',baseinfo=baseinfo,deepinfo=deepinfo,buglist=buglist)
+    return render_template('domain-detail.html',baseinfo=baseinfo,deepinfo=deepinfo,buglist=buglist,bugbit=bugbit,bugtype=bugtype)
 
 
 @app.route('/buglist/<int:page>',methods=['GET'])
 @app.route('/buglist')
 # @login_required
 def buglist(page=None):
+    bugbit,bugtype=core.GetBit()
     if not page:
         page = 1
     per_page = 10
     paginate = BugList.query.order_by(BugList.id.desc()).paginate(page, per_page, error_out=False)
     bugs = paginate.items
-    return render_template('bug-list.html', paginate=paginate, bugs=bugs)
+    return render_template('bug-list.html', paginate=paginate, bugs=bugs,bugbit=bugbit,bugtype=bugtype)
 
 
 @app.route('/bugdetail/<int:id>',methods=['GET'])
 @app.route('/bugdetail')
 # @login_required
 def bugdetail(id=None):
+    bugbit, bugtype = core.GetBit()
     if not id:
         buginfo = BugList.query.order_by(BugList.id.desc()).first()
     else:
         buginfo = BugList.query.filter(BugList.id == id).first()
     oldurlinfo=BaseInfo.query.filter(BaseInfo.url==buginfo.oldurl).first()
-    return render_template('bug-details.html',buginfo=buginfo,oldurlinfo=oldurlinfo)
+    return render_template('bug-details.html',buginfo=buginfo,oldurlinfo=oldurlinfo,bugbit=bugbit,bugtype=bugtype)
 
 
 @app.route('/user', methods=['GET', 'POST'])
@@ -173,12 +187,22 @@ def user():
 @app.route('/test_console', methods=['GET', 'POST'])
 # @login_required
 def console():
+    bugbit,bugtype=core.GetBit()
+    counts=core.GetCounts()
+    ports=core.GetPort()
+    services=core.GetServices()
+    target=core.GetTargetCount()
+    lastscantime = BaseInfo.query.order_by(BaseInfo.id.desc()).first().date
     if request.method == 'GET':
-        return render_template('console.html')
+        return render_template('console.html',bugbit=bugbit,bugtype=bugtype,counts=counts,lastscantime=lastscantime,ports=ports,services=services,target=target)
     else:
         urls = request.form.get('urls')
+        urls = urls.split()
+        print(urls)
+        for url in urls:
+            redispool.hincrby('targetscan', 'waitcount', 1)
         executor.submit(SZheConsole, urls)
-        return render_template('console.html')
+        return render_template('console.html',bugbit=bugbit,bugtype=bugtype,counts=counts,lastscantime=lastscantime,ports=ports,services=services,target=target)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -262,12 +286,13 @@ def about():
 @app.route('/log_detail/<int:page>', methods=['GET'])
 # @login_required
 def log_detail(page=None):
+    bugbit,bugtype=core.GetBit()
     if not page:
         page = 1
     per_page = 38
     paginate = Log.query.order_by(Log.date.desc()).paginate(page, per_page, error_out=False)
     logs = paginate.items
-    return render_template('log_detail.html', paginate=paginate, logs=logs)
+    return render_template('log_detail.html', paginate=paginate, logs=logs,bugbit=bugbit,bugtype=bugtype)
 
 
 @app.errorhandler(404)
