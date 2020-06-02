@@ -8,11 +8,10 @@ from init import app,redispool
 from concurrent.futures import ProcessPoolExecutor
 from SZheConsole import SZheConsole
 import core
+from decorators import login_required
 from POCScan import selfpocscan
 # executor = ThreadPoolExecutor()
 executor = ProcessPoolExecutor()
-
-
 
 def save_log(ip, email):
     log = Log(ip=ip, email=email)
@@ -77,13 +76,6 @@ def POCmanage():
         db.session.add(poc)
         db.session.commit()
         return render_template('pocmanage.html',bugbit=bugbit,bugtype=bugtype)
-
-
-@app.route('/setting')
-# @login_required
-def setting():
-    bugbit,bugtype=core.GetBit()
-    return render_template('setting.html',bugbit=bugbit,bugtype=bugtype)
 
 
 @app.route('/editinfo',methods=['GET','POST'])
@@ -192,7 +184,11 @@ def console():
     ports=core.GetPort()
     services=core.GetServices()
     target=core.GetTargetCount()
-    lastscantime = BaseInfo.query.order_by(BaseInfo.id.desc()).first().date
+    try:
+        lastscantime = BaseInfo.query.order_by(BaseInfo.id.desc()).first().date
+    except:
+        lastscantime="暂无扫描"
+        pass
     if request.method == 'GET':
         return render_template('console.html',bugbit=bugbit,bugtype=bugtype,counts=counts,lastscantime=lastscantime,ports=ports,services=services,target=target)
     else:
@@ -229,12 +225,14 @@ def login():
 @app.route('/GenInvitationCode', methods=['GET', 'POST'])
 # @login_required
 def GenInvitationCode():
+    user_id = session.get('user_id')
+    profile = Profile.query.filter(Profile.userid == user_id).first()
     code = str(uuid.uuid1())
     Code = InvitationCode(code=code)
     db.session.add(Code)
     db.session.commit()
     allcode=InvitationCode.query.order_by(InvitationCode.id.desc()).limit(10).all()
-    return render_template("user-center.html", temp=Code.code,allcode=allcode)
+    return render_template("user-center.html", profile=profile,temp=Code.code,allcode=allcode)
 
 
 @app.route('/regist/', methods=['GET', 'POST'])
@@ -298,11 +296,6 @@ def log_detail(page=None):
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
-
-
-@app.route('/test500')
-def test500():
-    return render_template('500.html')
 
 
 @app.errorhandler(500)
