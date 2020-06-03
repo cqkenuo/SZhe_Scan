@@ -63,8 +63,9 @@ def index(page=None):
 # @login_required
 def POCmanage():
     bugbit,bugtype=core.GetBit()
+    poclist=POC.query.order_by(POC.id.desc()).all()
     if request.method == 'GET':
-        return render_template('pocmanage.html',bugbit=bugbit,bugtype=bugtype)
+        return render_template('pocmanage.html',bugbit=bugbit,bugtype=bugtype,poclist=poclist)
     else:
         pocname=request.form.get('pocname')
         rule=request.form.get('rule')
@@ -75,7 +76,7 @@ def POCmanage():
         redispool.pfadd("poc", pocname)
         db.session.add(poc)
         db.session.commit()
-        return render_template('pocmanage.html',bugbit=bugbit,bugtype=bugtype)
+        return render_template('pocmanage.html',bugbit=bugbit,bugtype=bugtype,poclist=poclist)
 
 
 @app.route('/editinfo',methods=['GET','POST'])
@@ -162,6 +163,18 @@ def bugdetail(id=None):
     return render_template('bug-details.html',buginfo=buginfo,oldurlinfo=oldurlinfo,bugbit=bugbit,bugtype=bugtype)
 
 
+@app.route('/assetdetail/')
+@app.route('/assetdetail/<name>', methods=['GET'])
+# @login_required
+def assetdetail(name=None):
+    if not name:
+        return redirect(url_for('index'))
+    else:
+        assetdetail=redispool.hget('assets',name)
+        return render_template('assetDetail.html',name=name,assetdetail=assetdetail)
+
+
+
 @app.route('/user', methods=['GET', 'POST'])
 # @login_required
 def user():
@@ -170,10 +183,14 @@ def user():
     nowuser = User.query.filter(User.id == user_id).first()
     username = nowuser.username
     profile = Profile.query.filter(Profile.userid == user_id).first()
+    assetname=redispool.hkeys('assets')
     if request.method == 'GET':
-        return render_template('user-center.html',allcode=allcode,username=username,profile=profile)
+        return render_template('user-center.html',allcode=allcode,username=username,profile=profile,assetname=assetname)
     else:
-        return render_template('user-center.html',allcode=allcode,username=username,profile=profile)
+        name=request.form.get('asset')
+        urls=request.form.get('assets')
+        redispool.hset('assets',name,urls)
+        return render_template('user-center.html',allcode=allcode,username=username,profile=profile,assetname=assetname)
 
 
 @app.route('/test_console', methods=['GET', 'POST'])

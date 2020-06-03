@@ -16,7 +16,7 @@
             <p class="name">{{username}}</p>
             <p>个人博客:{{profile.blog}}</p>
             <p>简介:{{profile.signature}}</p>
-            <button onclick="window.location.href=" {{url_for('editinfo')}}"">修改信息</button>
+            <button onclick="window.location.href='{{url_for('editinfo')}}'">修改信息</button>
         </div>
     </div>
 
@@ -51,21 +51,16 @@
                         </ul>
                     </div>
                     <div class="tabPane tabAsset" id="tab_2" style="display:none;">
+
                         <form class="myForm" method="POST" action="" id="task" name="myTask">
-                            <textarea name="urls" rows="10" cols="30" placeholder="请输入新建资产:"></textarea>
+                            <input type="text" placeholder="请输入资产名：" name="asset" />
+                            <textarea name="assets" rows="10" cols="30" placeholder="请输入新建资产:"></textarea>
                             <button class="newtask" type="submit">新建资产</button>
                         </form>
-                        <ul class="collect-list">
-                            <li class="one">资产</li>
-                            <li>资产</li>
-                            <li>资产</li>
-                            <li>资产</li>
-                            <li>资产</li>
-                            <li>资产</li>
-                            <li>资产</li>
-                            <li>资产</li>
-                            <li>资产</li>
-                            <li>资产</li>
+                        <ul class="collect-list assetList">
+                            {% for asset in assetname %}
+                            <li> <a href="{{url_for('assetdetail',name=asset)}}">资产名称:{{asset}}</a></li>
+                            {% endfor %}
                         </ul>
                     </div>
                     <div class="tabPane tab-inv" id="tab_3" style="display:none;">

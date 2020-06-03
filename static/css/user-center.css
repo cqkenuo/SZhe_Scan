@@ -488,29 +488,49 @@ form ol li input {
   overflow: auto;
   height: 400px;
 }
+.assetList {
+  height: 250px;
+  padding-top: 190px;
+  overflow: auto;
+  width: 97%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 .tabAsset {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
+.tabAsset form input {
+  background-color: #f8f8ff;
+  border: #d3d3d3 solid 1px;
+  border-radius: 4px;
+  width: 100%;
+  height: 40px;
+  color: #494949;
+  position: relative;
+  top: -10px;
+  padding-left: 10px;
+}
+
 .tabAsset form {
   position: relative;
-  top: 10px;
+  top: 20px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  column-gap: 10px;
-  padding: 0 10px;
   width: 93%;
   margin: 0 auto;
 }
 .tabAsset form textarea {
-  flex: 4.2;
+  /* flex: 4.2; */
   /* width: 100%; */
-  width: 90%;
-  height: 100px;
+  width: 100%;
+  height: 120px;
   background-color: #f8f8ff;
   border: #d3d3d3 solid 1px;
   border-radius: 4px;
@@ -520,22 +540,23 @@ form ol li input {
 }
 
 .tabAsset form button {
-  flex: 1;
+  /* flex: 1; */
   /* width: 90%; */
-  width: 130px;
-  height: 45px;
+  width: 100%;
+  /* height: 25px; */
   border: #d3d3d3 solid 1px;
-  border-radius: 4px;
-  margin-right: 10px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  /* margin-right: 10px; */
   background-color: #0fbcf9;
   /* background-color: rgb(214, 214, 212); */
   color: #fff;
-  /* color: #4d4c4c; */
   padding: 10px 0;
-  /* position: relative;
-  top: 94px;
-  left: -108px; */
-  font-size: 18px;
+  position: relative;
+  top: -32px;
+  opacity: 0.7;
+  line-height: 12px;
+  font-size: 16px;
 }
 .tabAsset form button:hover {
   cursor: pointer;
@@ -551,12 +572,33 @@ form ol li input {
   border-radius: 4px;
   background-color: #f8f8ff;
 }
-
+.assetList li {
+  width: 90%;
+  flex: 1;
+  line-height: 70px;
+  margin-bottom: 10px;
+  border: 1px solid #d3d3d3;
+  border-radius: 4px;
+  background-color: #f8f8ff;
+}
+.assetList li a {
+  width: 690px;
+  line-height: 70px;
+}
+.assetList li a:link {
+  color: rgb(65, 65, 224);
+}
+.assetList li a:visited {
+  color: rgb(65, 65, 224);
+}
 .collect-list .one {
   position: relative;
   margin-top: 100px;
 }
-
+.assetList .one {
+  position: relative;
+  margin-top: 50px;
+}
 .user-bottom .whatever {
   flex: 1;
   background-color: #f8f8ff;
