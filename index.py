@@ -48,7 +48,7 @@ def validate(email, username, password1, password2):
 
 @app.route('/<int:page>',methods=['GET'])
 @app.route('/')
-# @login_required
+@login_required
 def index(page=None):
     bugbit,bugtype=core.GetBit()
     if not page:
@@ -60,7 +60,7 @@ def index(page=None):
 
 
 @app.route('/POCmanage',methods=['GET','POST'])
-# @login_required
+@login_required
 def POCmanage():
     bugbit,bugtype=core.GetBit()
     poclist=POC.query.order_by(POC.id.desc()).all()
@@ -76,11 +76,12 @@ def POCmanage():
         redispool.pfadd("poc", pocname)
         db.session.add(poc)
         db.session.commit()
+        poclist = POC.query.order_by(POC.id.desc()).all()
         return render_template('pocmanage.html',bugbit=bugbit,bugtype=bugtype,poclist=poclist)
 
 
 @app.route('/editinfo',methods=['GET','POST'])
-# @login_required
+@login_required
 def editinfo():
     user_id = session.get('user_id')
     nowuser = User.query.filter(User.id == user_id).first()
@@ -122,7 +123,7 @@ def editinfo():
 
 @app.route('/domaindetail/<int:id>',methods=['GET'])
 @app.route('/domaindetail')
-# @login_required
+@login_required
 def domaindetail(id=None):
     bugbit, bugtype = core.GetBit()
     if not id:
@@ -139,7 +140,7 @@ def domaindetail(id=None):
 
 @app.route('/buglist/<int:page>',methods=['GET'])
 @app.route('/buglist')
-# @login_required
+@login_required
 def buglist(page=None):
     bugbit,bugtype=core.GetBit()
     if not page:
@@ -152,7 +153,7 @@ def buglist(page=None):
 
 @app.route('/bugdetail/<int:id>',methods=['GET'])
 @app.route('/bugdetail')
-# @login_required
+@login_required
 def bugdetail(id=None):
     bugbit, bugtype = core.GetBit()
     if not id:
@@ -165,7 +166,7 @@ def bugdetail(id=None):
 
 @app.route('/assetdetail/')
 @app.route('/assetdetail/<name>', methods=['GET'])
-# @login_required
+@login_required
 def assetdetail(name=None):
     if not name:
         return redirect(url_for('index'))
@@ -176,7 +177,7 @@ def assetdetail(name=None):
 
 
 @app.route('/user', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def user():
     allcode=InvitationCode.query.order_by(InvitationCode.id.desc()).limit(10).all()
     user_id = session.get('user_id')
@@ -190,11 +191,12 @@ def user():
         name=request.form.get('asset')
         urls=request.form.get('assets')
         redispool.hset('assets',name,urls)
+        assetname = redispool.hkeys('assets')
         return render_template('user-center.html',allcode=allcode,username=username,profile=profile,assetname=assetname)
 
 
 @app.route('/test_console', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def console():
     bugbit,bugtype=core.GetBit()
     counts=core.GetCounts()
@@ -215,6 +217,7 @@ def console():
         for url in urls:
             redispool.hincrby('targetscan', 'waitcount', 1)
         executor.submit(SZheConsole, urls)
+        target = core.GetTargetCount()
         return render_template('console.html',bugbit=bugbit,bugtype=bugtype,counts=counts,lastscantime=lastscantime,ports=ports,services=services,target=target)
 
 
@@ -240,7 +243,7 @@ def login():
 
 # 生成邀请码
 @app.route('/GenInvitationCode', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def GenInvitationCode():
     user_id = session.get('user_id')
     profile = Profile.query.filter(Profile.userid == user_id).first()
@@ -282,7 +285,7 @@ def regist():
 
 
 @app.route('/logout/')
-# @login_required
+@login_required
 def logout():
     # session.pop('user_id')
     # del session('user_id')
@@ -291,7 +294,7 @@ def logout():
 
 
 @app.route('/about/')
-# @login_required
+@login_required
 def about():
     return render_template('about.html')
 
@@ -299,7 +302,7 @@ def about():
 # 日志每页显示38条
 @app.route('/log_detail/')
 @app.route('/log_detail/<int:page>', methods=['GET'])
-# @login_required
+@login_required
 def log_detail(page=None):
     bugbit,bugtype=core.GetBit()
     if not page:

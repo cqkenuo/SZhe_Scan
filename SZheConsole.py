@@ -95,13 +95,13 @@ def SZheScan(url):
                                 domainaddr=domaininfo.FindDomainAdd())
                 db.session.add(domaininfo)
             db.session.commit()
-            #默认url深度爬取为 1 ，避免大站链接过多，可在设置中进行修改
-            SpiderGetUrl2(attackurl,deepth=1)
+            #默认url深度爬取为 2 ，避免大站链接过多，可在设置中进行修改
+            SpiderGetUrl2(attackurl,deepth=2)
             print("对该网站爬取到的url进行常规漏扫 :D")
             BugScanConsole(url)
             try:
                 count=redispool.hget('targetscan', 'waitcount')
-                if type(count) =="string":
+                if 'str' in str(type(count)):
                     waitcount=int(count)-1
                     redispool.hset("targetscan", "waitcount", str(waitcount))
                 else:
@@ -165,6 +165,17 @@ def inputfilter(url):
             return url,attackurl2,rep2
         else:
             print("None data")
+            try:
+                count=redispool.hget('targetscan', 'waitcount')
+                if 'str' in str(type(count)):
+                    waitcount=int(count)-1
+                    redispool.hset("targetscan", "waitcount", str(waitcount))
+                else:
+                    redispool.hset("targetscan", "waitcount", "0")
+                redispool.hdel("targetscan", "nowscan")
+            except Exception as e:
+                print(e)
+                pass
             return None,None,None
     if "http://" in url or "https://" in url:
         attackurl=url
