@@ -13,7 +13,7 @@
 
 ## 安装方法(择其一即可):
    ### 源码安装(不建议使用源码安装，相比较于docker安装)
-   + Python版本:3.X，数据库:MySQL，Redis 
+   + Python版本:3.X，数据库:MySQL，Redis 另外本地需要安装nmap并添加进环境变量
    + Git bash界面输入 git clone https://github.com/Cl0udG0d/SZhe_Scan 进行下载（或直接下载源代码）
    + 安装python类库: pip3 install -r requirements.txt
    + 修改config.py数据库账号密码为本地账号密码,将config.py 中 HOSTNAME='mysql' 修改为 HOSTNAME='127.0.0.1',HOST = 'redis' 修改为 HOST = '127.0.0.1'
@@ -32,14 +32,14 @@
 ## 运行截图  
 ![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/%E7%99%BB%E5%BD%95%E7%95%8C%E9%9D%A2.png)
 ![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/%E6%B3%A8%E5%86%8C%E7%95%8C%E9%9D%A2.png)
-![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/%E4%B8%BB%E9%A1%B5.png)
-![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/%E6%8E%A7%E5%88%B6%E5%8F%B0.png)
-![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/%E6%BC%8F%E6%B4%9E%E5%88%97%E8%A1%A8.png)
+![主页.png](https://i.loli.net/2020/06/11/lYEJ19wDTZ8PgiV.png)
+![控制台.png](https://i.loli.net/2020/06/11/RCDdPvjFb4EgOx2.png)
+![漏洞列表.png](https://i.loli.net/2020/06/12/HsQTRjbghrLnizp.png)
 ![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/%E6%BC%8F%E6%B4%9E%E8%AF%A6%E6%83%85.png)
-![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6.png)
-![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/%E4%B8%AA%E4%BA%BA%E4%B8%AD%E5%BF%83.png)
-![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/POC%E7%AE%A1%E7%90%86.png)
-![](https://github.com/Cl0udG0d/SZhe_Scan/blob/master/static/images/%E5%85%B3%E4%BA%8E.png)
+![日志界面.png](https://i.loli.net/2020/06/12/4JgW32dmvTscrxu.png)
+![邀请码界面.png](https://i.loli.net/2020/06/12/qLG5uFDtTJBWX2z.png)
+![POC界面.png](https://i.loli.net/2020/06/12/12utocw3FilBCUO.png)
+![团队.png](https://i.loli.net/2020/06/12/q3p2ToInPalfUZ4.png)
 ## 主要功能:
    ### 信息搜集:
    #### 基础信息搜集  
@@ -77,7 +77,7 @@
    + 源码安装启动方式 在开启MySQL和Redis的情况下，命令行运行 python3 index.py，浏览器访问 127.0.0.1:5000即可  
    + docker安装启动方式 在SZhe_Scan文件夹下,使用 docker-compose up -d  启动docker服务,访问 http://ip:5000 登录进行访问
 ## 修Bug交流群  
-   > xxxxxxxxxx 暂无
+   > 672408351 (入群答案是U1poZVNjYW4=的base64解密，相信大师傅们是知道的
 ## 扫描器名字-->碎遮 的来由:
    > 取自《有匪》一书女主用过的第二把刀的名字 ~~中二 (确实想不出啥好名字了~~    
    > 天幕如遮，唯我一刀可碎千里华盖，纵横四海而无阻  
@@ -94,7 +94,7 @@
    > 七叔: 我特别好，特别值得,特别想在忙碌与疲惫中,找到一个更好的自己  
    > 不董: 普通小孩,惟适之安
 ## 说明  
-   > 如果项目有Bug或者意见/建议欢迎大师傅们提issue或者联系扣扣:2585614464,如果有想要一起协作完善，长期维护这个项目的也可以联系俺  
+   > 如果项目有Bug或者意见/建议欢迎大师傅们提issue或者加入修bug专用群:672408351,如果有想要一起协作完善，长期维护这个项目的也可以联系俺  
    > 本项目仅进行信息搜集，漏洞探测工作，无漏洞利用、攻击性行为，开发初衷为仅为方便安全人员对授权项目完成测试工作和学习交流使用  
    > 请使用者遵守当地相关法律，勿用于非授权测试，如作他用所承受的法律责任一概与作者无关，下载使用即代表使用者同意上述观点
 ## 致谢  
@@ -109,4 +109,6 @@
 ## 如果对你有帮助的话要不请作者喝杯奶茶?~~(嘿嘿)~~  
 > 开个玩笑hhh，对你有帮助已经让作者们很开心啦！:D  
 > 给个Star趴  
+呜呜呜，还是留个赞赏码吧，说不定大师傅愿意赞助一下卑微秃头大学生们一顿午饭呢，手动笔芯
+![赞赏码2.png](https://i.loli.net/2020/06/12/aLHpmsOVMhPT31j.png)
 ## cheer!!! 向每个为我国安全事业默默做贡献的白帽子致敬!!! :D
